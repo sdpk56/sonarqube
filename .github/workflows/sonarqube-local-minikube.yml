@@ -69,3 +69,7 @@ jobs:
         run: |
           curl -s --head "${{ steps.expose-sonarqube.outputs.SONARQUBE_URL }}"
         shell: powershell
+
+
+
+        
