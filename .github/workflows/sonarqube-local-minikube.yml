@@ -1,8 +1,14 @@
 name: SonarQube on Local Minikube
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
-
+    
 jobs:
   deploy:
     runs-on: self-hosted # Use your self-hosted runner, installed locally
