@@ -27,7 +27,7 @@ jobs:
           if (-not (kubectl get namespace $namespace -ErrorAction SilentlyContinue)) {
             kubectl create namespace $namespace
           }
-        shell: pwsh # Specify pwsh for PowerShell Core syntax
+        shell: powershell # Specify pwsh for PowerShell Core syntax
       
       - name: Install SonarQube with Helm
         run: |
