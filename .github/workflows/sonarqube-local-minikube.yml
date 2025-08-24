@@ -8,11 +8,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+
+
 jobs:
   deploy:
     runs-on: self-hosted # Use your local self-hosted runner
 
-    
     steps:
       - name: Add SonarQube Helm repository
         run: |
@@ -51,7 +52,7 @@ jobs:
       - name: Get SonarQube service URL
         id: expose-sonarqube
         run: |
-          $sonarqubeService = kubectl get service -n sonarqube -l "app.kubernetes.io/instance=sonarqube,app.kubernetes.io/component=sonarqube" -o jsonpath='{.items[0].metadata.name}'
+          $sonarqubeService = kubectl get service -n sonarqube -l "app.kubernetes.io/instance=sonarqube" -o jsonpath='{.items[?(@.spec.selector.app\.kubernetes\.io/component=="sonarqube")].metadata.name}'
           $sonarqubeUrl = minikube service $sonarqubeService --namespace sonarqube --url
           echo "SONARQUBE_URL=$sonarqubeUrl" >> $env:GITHUB_OUTPUT
         shell: powershell
