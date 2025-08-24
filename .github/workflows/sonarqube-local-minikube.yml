@@ -9,26 +9,25 @@ on:
       - main
   workflow_dispatch:
 
-
 jobs:
   deploy:
-    runs-on: self-hosted # Use your self-hosted runner, installed locally
-    
+    runs-on: self-hosted # Use your local self-hosted runner
+
     steps:
       - name: Add SonarQube Helm repository
         run: |
           helm repo add sonarqube https://sonarsource.github.io/helm-chart-sonarqube
           helm repo update
-      
+        shell: powershell
+
       - name: Create sonarqube namespace if it does not exist
-        # Check if the namespace exists and only create it if it doesn't.
         run: |
           $namespace = "sonarqube"
           if (-not (kubectl get namespace $namespace -ErrorAction SilentlyContinue)) {
             kubectl create namespace $namespace
           }
-        shell: powershell # Specify powershell for PowerShell Core syntax
-      
+        shell: powershell
+
       - name: Install SonarQube with Helm
         run: |
           helm upgrade --install sonarqube sonarqube/sonarqube `
@@ -36,9 +35,11 @@ jobs:
             --set monitoringPasscode=your_secure_passcode `
             --set community.enabled=true
         env:
-          MONITORING_PASSCODE: 'your_secure_passcode' # Replace with a secure password
+          # A passcode is required for monitoring endpoints in recent chart versions.
+          # For a real application, you should manage this as a GitHub Secret.
+          MONITORING_PASSCODE: 'your_secure_passcode'
         shell: powershell
-        
+
       - name: Wait for SonarQube pods to be ready
         run: |
           kubectl wait --namespace=sonarqube `
@@ -46,14 +47,14 @@ jobs:
             --selector=app.kubernetes.io/name=sonarqube `
             --timeout=600s
         shell: powershell
-        
+
       - name: Get SonarQube service URL
         id: expose-sonarqube
         run: |
           $sonarqubeUrl = minikube service sonarqube --namespace sonarqube --url
           echo "SONARQUBE_URL=$sonarqubeUrl" >> $env:GITHUB_OUTPUT
         shell: powershell
-        
+
       - name: Display SonarQube access information
         run: |
           Write-Host "SonarQube is now running and accessible at:"
@@ -67,8 +68,3 @@ jobs:
         run: |
           curl -s --head "${{ steps.expose-sonarqube.outputs.SONARQUBE_URL }}"
         shell: powershell
-
-      
-
-
-        
