@@ -1,0 +1,53 @@
+name: SonarQube on Local Minikube
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted # Use your self-hosted runner, installed locally
+
+    steps:
+      - name: Add SonarQube Helm repository
+        run: |
+          helm repo add sonarqube https://sonarsource.github.io/helm-chart-sonarqube
+          helm repo update
+
+      - name: Create sonarqube namespace
+        run: kubectl create namespace sonarqube || true # Continue even if namespace exists
+
+      - name: Install SonarQube with Helm
+        run: |
+          helm upgrade --install sonarqube sonarqube/sonarqube \
+            --namespace sonarqube \
+            --set monitoringPasscode=your_secure_passcode \
+            --set community.enabled=true
+        env:
+          # A passcode is required for monitoring endpoints in recent chart versions.
+          # For a real application, you would manage this as a GitHub Secret.
+          MONITORING_PASSCODE: 'your_secure_passcode'
+
+      - name: Wait for SonarQube pods to be ready
+        run: |
+          kubectl wait --namespace=sonarqube \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/name=sonarqube \
+            --timeout=600s # Increased timeout for slow local Minikube
+
+      - name: Expose SonarQube service via Minikube
+        id: expose-sonarqube
+        run: |
+          SONARQUBE_URL=$(minikube service sonarqube --namespace sonarqube --url)
+          echo "SONARQUBE_URL=$SONARQUBE_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Display SonarQube access information
+        run: |
+          echo "SonarQube is now running and accessible at:"
+          echo "URL: ${{ steps.expose-sonarqube.outputs.SONARQUBE_URL }}"
+          echo "Username: admin"
+          echo "Password: admin"
+          echo "Please change the default password after your first login."
+
+      - name: Test access to SonarQube
+        run: |
+          curl -s --head "${{ steps.expose-sonarqube.outputs.SONARQUBE_URL }}"
