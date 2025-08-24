@@ -42,9 +42,10 @@ jobs:
 
       - name: Wait for SonarQube pods to be ready
         run: |
+          # Use a more reliable selector for the Community Edition pods
           kubectl wait --namespace=sonarqube `
             --for=condition=ready pod `
-            --selector=app.kubernetes.io/name=sonarqube `
+            --selector=app.kubernetes.io/instance=sonarqube `
             --timeout=600s
         shell: powershell
 
@@ -68,9 +69,3 @@ jobs:
         run: |
           curl -s --head "${{ steps.expose-sonarqube.outputs.SONARQUBE_URL }}"
         shell: powershell
-
-
-
-
-
-        
