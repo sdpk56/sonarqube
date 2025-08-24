@@ -9,6 +9,8 @@ on:
       - main
   workflow_dispatch:
 
+    
+
 jobs:
   deploy:
     runs-on: self-hosted # Use your local self-hosted runner
@@ -72,4 +74,3 @@ jobs:
 
 
 
-        
