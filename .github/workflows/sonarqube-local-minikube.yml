@@ -27,7 +27,7 @@ jobs:
           if (-not (kubectl get namespace $namespace -ErrorAction SilentlyContinue)) {
             kubectl create namespace $namespace
           }
-        shell: powershell # Specify pwsh for PowerShell Core syntax
+        shell: powershell # Specify powershell for PowerShell Core syntax
       
       - name: Install SonarQube with Helm
         run: |
@@ -37,7 +37,7 @@ jobs:
             --set community.enabled=true
         env:
           MONITORING_PASSCODE: 'your_secure_passcode' # Replace with a secure password
-        shell: pwsh
+        shell: powershell
         
       - name: Wait for SonarQube pods to be ready
         run: |
@@ -45,14 +45,14 @@ jobs:
             --for=condition=ready pod `
             --selector=app.kubernetes.io/name=sonarqube `
             --timeout=600s
-        shell: pwsh
+        shell: powershell
         
       - name: Get SonarQube service URL
         id: expose-sonarqube
         run: |
           $sonarqubeUrl = minikube service sonarqube --namespace sonarqube --url
           echo "SONARQUBE_URL=$sonarqubeUrl" >> $env:GITHUB_OUTPUT
-        shell: pwsh
+        shell: powershell
         
       - name: Display SonarQube access information
         run: |
@@ -61,9 +61,9 @@ jobs:
           Write-Host "Username: admin"
           Write-Host "Password: admin"
           Write-Host "Please change the default password after your first login."
-        shell: pwsh
+        shell: powershell
 
       - name: Test access to SonarQube
         run: |
           curl -s --head "${{ steps.expose-sonarqube.outputs.SONARQUBE_URL }}"
-        shell: pwsh
+        shell: powershell
